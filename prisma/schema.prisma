@@ -1,0 +1,65 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_DATABASE_URL")
+}
+
+model Form {
+  id          Int      @id @default(autoincrement())
+  formId      String   @unique @default(uuid())
+  userId      String
+  name        String
+  description String   @default("")
+  jsonBlocks  String   @default("[]")
+  views       Int      @default(0)
+  responses   Int      @default(0)
+  published   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @default(now()) @updatedAt
+
+  creatorName String
+
+  settingsId Int
+  settings   FormSettings @relation(fields: [settingsId], references: [id])
+
+  formResponses FormResponses[]
+}
+
+model FormSettings {
+  id              Int      @id @default(autoincrement())
+  primaryColor    String
+  backgroundColor String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @default(now()) @updatedAt
+
+  forms Form[] // List of forms using this settings object
+}
+
+// model ColorTheme {
+//   id           Int           @id @default(autoincrement())
+//   primaryColor String        // The main color (e.g., #2d31fa)
+//   backgroundColor String     // Background color (e.g., #ffffff)
+//   isDefault    Boolean       @default(false) // Flag for default theme
+
+//   formSettings FormSettings[]
+// }
+
+model FormResponses {
+  id          Int    @id @default(autoincrement())
+  jsonReponse String
+
+  formId    Int
+  form      Form     @relation(fields: [formId], references: [id])
+  createdAt DateTime @default(now())
+}
